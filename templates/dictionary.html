@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-form">
+        <input type="text" id="search-input" placeholder="Enter a word to search...">
+        <button id="search-button">Search</button>
+    </div>
+    <div id="loading" class="loading-indicator" style="display: none;">Searching...</div>
+    <div id="results" class="results-area"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const loadingIndicator = document.getElementById('loading');
+        const resultsArea = document.getElementById('results');
+
+        // Function to perform search
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            resultsArea.innerHTML = '';
+
+            // Fetch search results
+            fetch(`/search?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loadingIndicator.style.display = 'none';
+                    displayResults(data, query);
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    resultsArea.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                });
+        }
+
+        // Function to display results
+        function displayResults(data, query) {
+            resultsArea.innerHTML = '';
+
+            if (data.exact_match) {
+                // Display exact match
+                const exactMatch = document.createElement('div');
+                exactMatch.className = 'result exact-match';
+                exactMatch.innerHTML = `
+                    <h3>Exact match found:</h3>
+                    <p><strong>${data.exact_match.word}</strong> - ${data.exact_match.meaning}</p>
+                `;
+                resultsArea.appendChild(exactMatch);
+            } else if (data.suggestions && data.suggestions.length > 0) {
+                // Display suggestions
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.className = 'suggestions';
+                suggestionsDiv.innerHTML = `<h3>Did you mean:</h3>`;
+                
+                const suggestionsList = document.createElement('ul');
+                data.suggestions.forEach(suggestion => {
+                    const item = document.createElement('li');
+                    item.innerHTML = `<strong>${suggestion.word}</strong> - ${suggestion.meaning}`;
+                    suggestionsList.appendChild(item);
+                });
+                
+                suggestionsDiv.appendChild(suggestionsList);
+                resultsArea.appendChild(suggestionsDiv);
+            } else {
+                // No results found
+                resultsArea.innerHTML = `<div class="no-results">No matches found for "${query}".</div>`;
+            }
+        }
+
+        // Event listeners
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Real-time search suggestions (bonus feature)
+        let typingTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(typingTimer);
+            if (searchInput.value.trim().length > 2) {
+                typingTimer = setTimeout(performSearch, 500);
+            }
+        });
+    });
+</script>
+{% endblock %}
