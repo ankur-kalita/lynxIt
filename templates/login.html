@@ -14,6 +14,15 @@
     </div>
     {% endif %}
 
+    <div id="system-message" class="info-message" style="display: none">
+      <svg viewBox="0 0 24 24" width="16" height="16">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+        />
+      </svg>
+      <span id="message-text"></span>
+    </div>
+
     <form method="POST" class="login-form">
       <div class="form-field">
         <label for="username">Username</label>
@@ -52,13 +61,16 @@
         </div>
       </div>
 
-      <a href="#" class="forgot-password">Forgot password?</a>
+      <a href="#" class="forgot-password" id="forgot-password-link"
+        >Forgot password?</a
+      >
 
       <button type="submit" class="login-button">Sign In</button>
     </form>
 
     <div class="register-link">
-      Don't have an account? <a href="/register">Create account</a>
+      Don't have an account?
+      <a href="#" id="create-account-link">Create account</a>
     </div>
   </div>
 </div>
@@ -110,6 +122,34 @@
   .error-message svg {
     fill: #d83838;
     margin-right: 0.5rem;
+  }
+
+  .info-message {
+    display: flex;
+    align-items: center;
+    background-color: #f1f4ff;
+    color: #4e5fff;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border-left: 3px solid #4e5fff;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .info-message svg {
+    fill: #4e5fff;
+    margin-right: 0.5rem;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .login-form {
@@ -218,4 +258,48 @@
     }
   }
 </style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const passwordResetMessage =
+      "It's hardcoded bro! You said it in the doc, the username is 'admin' and password is 'password123' (the 123 makes it more secure!!)";
+    const createAccountMessage =
+      "No no, we dont do that here! You can only login with the hardcoded credentials!! One Nation, One User!!";
+
+    const forgotPasswordLink = document.getElementById("forgot-password-link");
+    const createAccountLink = document.getElementById("create-account-link");
+    const messageContainer = document.getElementById("system-message");
+    const messageText = document.getElementById("message-text");
+
+    function showMessage(message) {
+      messageText.textContent = message;
+      messageContainer.style.display = "flex";
+      messageContainer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      messageContainer.style.opacity = "1";
+
+      setTimeout(() => {
+        messageContainer.style.opacity = "0.9";
+      }, 5000);
+    }
+
+    forgotPasswordLink.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      let message = passwordResetMessage;
+      const username = document.getElementById("username").value;
+
+      if (username.trim() !== "") {
+        message = passwordResetMessage;
+      }
+
+      showMessage(message);
+    });
+
+    createAccountLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      showMessage(createAccountMessage);
+    });
+  });
+</script>
 {% endblock %}
