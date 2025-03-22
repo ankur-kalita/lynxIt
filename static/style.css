@@ -134,3 +134,25 @@ button:hover {
     text-align: center;
     padding: 20px;
 }
+
+#past-searches {
+    margin-top: 20px;
+}
+
+#past-searches-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#past-searches-list li {
+    cursor: pointer;
+    padding: 5px;
+    margin: 2px 0;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+}
+
+#past-searches-list li:hover {
+    background-color: #e0e0e0;
+}
+

@@ -1,21 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from functools import wraps
 import json
-import difflib  # For fuzzy matching
+import difflib
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this in production
+app.secret_key = 'your_secret_key_here'  
 
-# Load dictionary data
 with open('dictionary.json', 'r') as f:
     dictionary = json.load(f)
 
-# Hardcoded credentials (in a real app, use a database with hashed passwords)
 CREDENTIALS = {
-    "admin": "password123"
+    "admin": generate_password_hash("password123")
 }
 
-# Login required decorator
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -36,7 +34,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        if username in CREDENTIALS and CREDENTIALS[username] == password:
+        if username in CREDENTIALS and check_password_hash(CREDENTIALS[username], password):
             session['username'] = username
             return redirect(url_for('index'))
         else:
@@ -57,15 +55,12 @@ def search():
     if not query:
         return jsonify({"exact_match": None, "suggestions": []})
     
-    # Check for exact match
     exact_match = None
     if query.lower() in dictionary:
         exact_match = {"word": query.lower(), "meaning": dictionary[query.lower()]}
     
-    # Get close matches if no exact match
     suggestions = []
     if not exact_match:
-        # Use difflib for fuzzy matching
         close_matches = difflib.get_close_matches(query.lower(), dictionary.keys(), n=5, cutoff=0.6)
         suggestions = [{"word": word, "meaning": dictionary[word]} for word in close_matches]
     
